@@ -233,6 +233,41 @@ html, body {
 .histRow .m span { margin-left: 8px; color: var(--dim); opacity: 0.5; }
 .histRow .m span.on { color: var(--accent); opacity: 1; font-weight: 700; }
 
+/* ---------- full log ---------- */
+
+.logList {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  padding: 4px 2px;
+  scrollbar-width: none;
+}
+.logList::-webkit-scrollbar { display: none; }
+.logEntry { border-left: 2px solid var(--line); padding-left: 7px; }
+.logEntry.t-workout { border-color: var(--accent); }
+.logEntry.t-run { border-color: #4c8dff; }
+.logEntry.t-sauna { border-color: var(--ember); }
+.logEntry.t-weight { border-color: #3f9d55; }
+.logHead {
+  display: flex;
+  justify-content: space-between;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+}
+.logHead .when { color: var(--dim); font-weight: 500; }
+.logEntry.t-workout .what { color: var(--accent); }
+.logEntry.t-run .what { color: #4c8dff; }
+.logEntry.t-sauna .what { color: var(--ember); }
+.logEntry.t-weight .what { color: #3f9d55; }
+.logDetail { font-size: 10px; color: var(--ink); line-height: 1.4; margin-top: 1px; }
+.logEmpty { text-align: center; color: var(--dim); font-size: 10px; letter-spacing: 0.14em; margin-top: 90px; }
+#menu .hist { cursor: pointer; }
+#home .streakBlock { cursor: pointer; }
+
 /* ---------- help ---------- */
 
 .helpBody {

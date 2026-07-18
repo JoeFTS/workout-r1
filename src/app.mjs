@@ -15,7 +15,7 @@ import { setWebhook, enqueue, drain, entryPayload } from './sync.mjs';
 import { bindHardware } from './hardware.mjs';
 
 const $ = (id) => document.getElementById(id);
-const SCREENS = ['home', 'baseline', 'workout', 'rest', 'complete', 'sauna', 'run', 'menu', 'help', 'weight'];
+const SCREENS = ['home', 'baseline', 'workout', 'rest', 'complete', 'sauna', 'run', 'menu', 'help', 'weight', 'logview'];
 const todayISO = () => {
   const d = new Date();
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
@@ -347,9 +347,8 @@ function renderRun() {
 
 async function renderMenu() {
   const rows = weekHistory(log, todayISO());
-  const DAYS = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
   $('histList').innerHTML = rows.map((r) => {
-    const dow = DAYS[new Date(r.date + 'T12:00:00').getDay()];
+    const dow = dowOf(r.date);
     return `<div class="histRow"><span class="d">${dow} ${r.date.slice(5)}</span>` +
       `<span class="m"><span class="${r.workout ? 'on' : ''}">W</span>` +
       `<span class="${r.run ? 'on' : ''}">R</span>` +
@@ -358,6 +357,41 @@ async function renderMenu() {
   const q = await loadQueue();
   $('mQueue').textContent = q.length ? `(${q.length})` : '';
   show('menu');
+}
+
+// ---------- full log ----------
+
+const DAYS = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
+const dowOf = (iso) => DAYS[new Date(iso + 'T12:00:00').getDay()];
+
+// Compact one-line detail for the tiny screen (summarize() is Sheet-length).
+function logDetail(e) {
+  const p = e.payload;
+  if (e.type === 'workout') {
+    const t = totals(e);
+    const plank = p.rounds.reduce((s, r) => s + (r.plank || 0), 0);
+    return `${t.reps} reps · ${p.rounds.length} rounds · plank ${plank}s`;
+  }
+  if (e.type === 'run')
+    return p.distance ? `${p.minutes} min · ${(p.distance / 10).toFixed(1)} mi` : `${p.minutes} min`;
+  if (e.type === 'sauna') return `${p.minutes} min`;
+  if (e.type === 'weight') return `${p.lbs} lb`;
+  return '';
+}
+
+function openLog() {
+  const rows = [...log].reverse().slice(0, 60); // newest first, plenty for a scroll
+  $('logList').innerHTML = rows.length
+    ? rows.map((e) => {
+      const md = e.date.slice(5).replace('-', '/');
+      return `<div class="logEntry t-${e.type}">` +
+        `<div class="logHead"><span class="what">${e.type.toUpperCase()}</span>` +
+        `<span class="when">${dowOf(e.date)} ${md}</span></div>` +
+        `<div class="logDetail">${logDetail(e)}</div></div>`;
+    }).join('')
+    : '<div class="logEmpty">NOTHING LOGGED YET</div>';
+  $('logList').scrollTop = 0;
+  show('logview');
 }
 
 // ---------- weigh in ----------
@@ -453,6 +487,8 @@ function dial(delta) {
     renderRun();
   } else if (screen === 'help') {
     $('helpBody').scrollTop -= delta * 40; // wheel up scrolls up
+  } else if (screen === 'logview') {
+    $('logList').scrollTop -= delta * 40;
   } else if (screen === 'weight') {
     if (wt.step === 'height') wt.heightIn = Math.min(96, Math.max(48, wt.heightIn + delta));
     else if (wt.step === 'weigh') wt.lbs = Math.max(50, wt.lbs + delta);
@@ -472,7 +508,8 @@ function sideClick() {
   else if (screen === 'help') {
     if (helpMode === 'firstrun') renderHome();
     else renderMenu();
-  } else if (screen === 'weight') {
+  } else if (screen === 'logview') renderMenu();
+  else if (screen === 'weight') {
     if (wt.step === 'target') { wt.step = 'weigh'; renderWeight(); }
     else if (wt.step === 'weigh' && !hasBody(profile)) { wt.step = 'height'; renderWeight(); }
     else { wt = null; renderMenu(); }
@@ -520,6 +557,8 @@ export async function boot({ webhook }) {
   };
   $('mResync').onclick = async () => { await drain(); renderMenu(); renderSyncDot(); };
   $('mBaseline').onclick = startBaseline;
+  $('histList').onclick = openLog;
+  document.querySelector('.streakBlock').onclick = openLog;
   $('mWeigh').onclick = openWeight;
   $('wtConfirm').onclick = confirmWeight;
   $('mHelp').onclick = () => openHelp('menu');
