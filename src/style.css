@@ -307,6 +307,9 @@ html, body {
 .logEntry.t-sauna .what { color: var(--ember); }
 .logEntry.t-weight .what { color: #3f9d55; }
 .logDetail { font-size: 10px; color: var(--ink); line-height: 1.4; margin-top: 1px; }
+.logEntry { cursor: pointer; }
+.logEntry.armed { border-color: #ff3b30 !important; background: rgba(255, 59, 48, 0.1); }
+.logEntry.armed .logDetail { color: #ff6b60; font-weight: 700; letter-spacing: 0.1em; }
 .logEmpty { text-align: center; color: var(--dim); font-size: 10px; letter-spacing: 0.14em; margin-top: 90px; }
 #menu .hist { cursor: pointer; }
 #home .streakBlock { cursor: pointer; }

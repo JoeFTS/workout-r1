@@ -45,6 +45,9 @@ export async function drain() {
   return { sent, remaining: q.length };
 }
 
+// Delete a Sheet row by entry id (entry was removed on-device).
+export const delPayload = (id) => ({ action: 'del', id });
+
 // One row per log entry; the Sheet upserts by entry id so retries are safe.
 export function entryPayload(entry) {
   return {

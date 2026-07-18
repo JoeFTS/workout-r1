@@ -23,6 +23,7 @@ function doPost(e) {
     var body = JSON.parse(e.postData.contents);
     switch (body.action) {
       case 'log':  upsertLog(body); break;
+      case 'del':  deleteLog(body.id); break;
       case 'ping': break; // health check
       default: return json({ ok: false, error: 'unknown action ' + body.action });
     }
@@ -49,6 +50,16 @@ function upsertLog(b) {
     }
   }
   sheet.appendRow(row);
+}
+
+function deleteLog(id) {
+  var sheet = getSheet('Log');
+  var last = sheet.getLastRow();
+  if (last < 2) return;
+  var ids = sheet.getRange(2, 1, last - 1, 1).getValues();
+  for (var i = ids.length - 1; i >= 0; i--) {
+    if (ids[i][0] === id) sheet.deleteRow(i + 2);
+  }
 }
 
 function getSheet(name) {

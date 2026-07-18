@@ -11,8 +11,10 @@ import {
   loadProfile, saveProfile, loadLog, saveLog, loadQueue, saveQueue,
   getJSON, setJSON, storageMode,
 } from './storage.mjs';
-import { setWebhook, enqueue, drain, entryPayload } from './sync.mjs';
+import { setWebhook, enqueue, drain, entryPayload, delPayload } from './sync.mjs';
 import { bindHardware } from './hardware.mjs';
+
+const VERSION = 'V8'; // bump on every deploy — shown on home so staleness is visible
 
 const $ = (id) => document.getElementById(id);
 const SCREENS = ['home', 'baseline', 'workout', 'rest', 'complete', 'sauna', 'run', 'menu', 'help', 'weight', 'logview', 'streaks'];
@@ -112,7 +114,8 @@ async function renderHome() {
 async function renderSyncDot() {
   const q = await loadQueue();
   $('syncDot').className = 'dot ' + (q.length ? 'pending' : 'ok');
-  $('footNote').textContent = q.length ? `${q.length} queued · hold side = menu` : 'hold side = menu';
+  $('footNote').textContent =
+    (q.length ? `${q.length} queued · hold side = menu` : 'hold side = menu') + ` · ${VERSION}`;
 }
 
 // ---------- baseline test ----------
@@ -463,19 +466,42 @@ function logDetail(e) {
   return '';
 }
 
+let delArmed = null; // entry id armed for deletion (tap once to arm, again to delete)
+
 function openLog() {
+  delArmed = null;
+  renderLogList();
+  $('logList').scrollTop = 0;
+  show('logview');
+}
+
+function renderLogList() {
   const rows = [...log].reverse().slice(0, 60); // newest first, plenty for a scroll
   $('logList').innerHTML = rows.length
     ? rows.map((e) => {
       const md = e.date.slice(5).replace('-', '/');
-      return `<div class="logEntry t-${e.type}">` +
+      const armed = e.id === delArmed;
+      return `<div class="logEntry t-${e.type}${armed ? ' armed' : ''}" data-id="${e.id}">` +
         `<div class="logHead"><span class="what">${e.type.toUpperCase()}</span>` +
         `<span class="when">${dowOf(e.date)} ${md}</span></div>` +
-        `<div class="logDetail">${logDetail(e)}</div></div>`;
+        `<div class="logDetail">${armed ? 'TAP AGAIN TO DELETE' : logDetail(e)}</div></div>`;
     }).join('')
     : '<div class="logEmpty">NOTHING LOGGED YET</div>';
-  $('logList').scrollTop = 0;
-  show('logview');
+}
+
+async function logListTap(ev) {
+  const el = ev.target.closest('.logEntry');
+  if (!el) return;
+  const id = el.dataset.id;
+  if (delArmed === id) {
+    log = log.filter((e) => e.id !== id);
+    await saveLog(log);
+    if (!id.startsWith('demo_')) enqueue(delPayload(id)).then(renderSyncDot);
+    delArmed = null;
+  } else {
+    delArmed = id; // arm this one (re-taps elsewhere just move the arm)
+  }
+  renderLogList();
 }
 
 // ---------- weigh in ----------
@@ -647,6 +673,7 @@ export async function boot({ webhook }) {
   $('histList').onclick = () => { logReturn = 'menu'; openLog(); };
   document.querySelector('.streakBlock').onclick = openStreaks;
   $('stLog').onclick = () => { logReturn = 'streaks'; openLog(); };
+  $('logList').onclick = logListTap;
   $('mWeigh').onclick = openWeight;
   $('wtConfirm').onclick = confirmWeight;
   $('mHelp').onclick = () => openHelp('menu');
