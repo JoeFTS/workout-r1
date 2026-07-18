@@ -219,17 +219,46 @@ html, body {
 
 /* ---------- history ---------- */
 
-.hist { flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 3px; }
+#menu { gap: 4px; }
+#menu .btn { padding: 7px 4px; font-size: 11px; }
+.hist { flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 2px; overflow: hidden; min-height: 0; }
 .histRow {
   display: flex;
   justify-content: space-between;
-  font-size: 11px;
+  font-size: 10px;
   letter-spacing: 0.1em;
-  padding: 1px 2px;
+  padding: 0 2px;
 }
 .histRow .d { color: var(--dim); }
 .histRow .m span { margin-left: 8px; color: var(--dim); opacity: 0.5; }
 .histRow .m span.on { color: var(--accent); opacity: 1; font-weight: 700; }
+
+/* ---------- help ---------- */
+
+.helpBody {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 4px 2px;
+  scrollbar-width: none;
+}
+.helpBody::-webkit-scrollbar { display: none; }
+.helpSec p {
+  font-size: 10px;
+  line-height: 1.5;
+  color: var(--ink);
+  margin-top: 3px;
+}
+.helpSec p + p { margin-top: 5px; }
+.helpH {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  color: var(--accent);
+}
 
 @media (prefers-reduced-motion: reduce) {
   * { animation: none !important; transition: none !important; }

@@ -1,4 +1,4 @@
-# Grind — R1 Workout App Design
+# Forge — R1 Workout App Design
 
 **Date:** 2026-07-17
 **Platform:** Rabbit R1 Creation (`rabbit-hmi-oss/creations-sdk`), 240×282 portrait web app

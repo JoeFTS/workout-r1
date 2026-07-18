@@ -1,5 +1,5 @@
 /**
- * Grind (R1 workout tracker) — Google Apps Script web app backend.
+ * Forge (R1 workout tracker) — Google Apps Script web app backend.
  *
  * Receives POSTs from the R1 Creation:
  *   action:'log'  -> upsert one row into the "Log" tab (by entry id)

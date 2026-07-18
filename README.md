@@ -1,4 +1,4 @@
-# Grind — R1 Workout Tracker
+# Forge — R1 Workout Tracker
 
 Daily no-equipment training companion for the **Rabbit R1**, built as a hand-coded
 Creation (web app via `rabbit-hmi-oss/creations-sdk`). Guided full-body bodyweight

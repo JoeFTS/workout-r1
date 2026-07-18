@@ -14,7 +14,7 @@ import { setWebhook, enqueue, drain, entryPayload } from './sync.mjs';
 import { bindHardware } from './hardware.mjs';
 
 const $ = (id) => document.getElementById(id);
-const SCREENS = ['home', 'baseline', 'workout', 'rest', 'complete', 'sauna', 'run', 'menu'];
+const SCREENS = ['home', 'baseline', 'workout', 'rest', 'complete', 'sauna', 'run', 'menu', 'help'];
 const todayISO = () => {
   const d = new Date();
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
@@ -31,6 +31,7 @@ let wk = null;      // workout session: { plan, round, exIdx, actuals, dial, pla
 let rest = null;    // { remaining, timer }
 let sauna = { mode: 'idle', seconds: 0, minutes: 20, timer: null };
 let run = { minutes: 30, dist: 0, field: 'min' };
+let helpMode = 'menu'; // 'menu' (opened from menu) | 'firstrun' (intro before baseline)
 
 const BL_DEFAULTS = { pushups: 20, plank: 60, squats: 30, burpees: 10 };
 
@@ -357,6 +358,20 @@ async function renderMenu() {
   show('menu');
 }
 
+// ---------- help ----------
+
+function openHelp(mode) {
+  helpMode = mode;
+  $('helpOk').textContent = mode === 'firstrun' ? 'START BASELINE TEST' : 'GOT IT';
+  $('helpBody').scrollTop = 0;
+  show('help');
+}
+
+function closeHelp() {
+  if (helpMode === 'firstrun') startBaseline();
+  else renderMenu();
+}
+
 // ---------- hardware routing ----------
 
 function dial(delta) {
@@ -375,6 +390,8 @@ function dial(delta) {
     if (run.field === 'min') run.minutes = Math.max(1, run.minutes + delta);
     else run.dist = clamp0(run.dist + delta);
     renderRun();
+  } else if (screen === 'help') {
+    $('helpBody').scrollTop -= delta * 40; // wheel up scrolls up
   }
 }
 
@@ -386,6 +403,10 @@ function sideClick() {
   } else if (screen === 'sauna') {
     if (sauna.mode !== 'running') { resetSauna(); renderHome(); }
   } else if (screen === 'run' || screen === 'menu') renderHome();
+  else if (screen === 'help') {
+    if (helpMode === 'firstrun') renderHome();
+    else renderMenu();
+  }
 }
 
 // ---------- boot ----------
@@ -397,7 +418,7 @@ export async function boot({ webhook }) {
 
   // taps
   $('btnWorkout').onclick = async () => {
-    if (!hasBaseline(profile)) return startBaseline();
+    if (!hasBaseline(profile)) return openHelp('firstrun'); // intro before first test
     const st = todayStatus(log, todayISO());
     if (st.workout) return; // already done today
     if ($('btnWorkout').dataset.resume) {
@@ -429,6 +450,8 @@ export async function boot({ webhook }) {
   };
   $('mResync').onclick = async () => { await drain(); renderMenu(); renderSyncDot(); };
   $('mBaseline').onclick = startBaseline;
+  $('mHelp').onclick = () => openHelp('menu');
+  $('helpOk').onclick = closeHelp;
   $('mBack').onclick = renderHome;
 
   // wheel + buttons
@@ -439,7 +462,7 @@ export async function boot({ webhook }) {
     onLongPress: () => { if (screen === 'home' || screen === 'menu') renderMenu(); },
   });
 
-  console.log(`grind boot: storage=${storageMode}`);
+  console.log(`forge boot: storage=${storageMode}`);
   drain().then(renderSyncDot);
   renderHome();
 }

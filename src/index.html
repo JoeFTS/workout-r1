@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=240, height=282, initial-scale=1, user-scalable=no" />
-  <title>Grind</title>
+  <title>Forge</title>
   <link rel="stylesheet" href="fonts.css" />
   <link rel="stylesheet" href="style.css" />
 </head>
@@ -106,8 +106,65 @@
     <div class="stack">
       <button id="mResync" class="btn">RESYNC <span id="mQueue" class="dim"></span></button>
       <button id="mBaseline" class="btn">RE-RUN BASELINE</button>
+      <button id="mHelp" class="btn">HOW TO USE</button>
       <button id="mBack" class="btn">BACK</button>
     </div>
+  </div>
+
+  <!-- HELP / HOW TO -->
+  <div id="help" class="screen" style="display:none">
+    <div class="topbar">HOW TO USE</div>
+    <div id="helpBody" class="helpBody">
+      <div class="helpSec">
+        <div class="helpH">THE DAILY WORKOUT</div>
+        <p>One circuit a day: push-ups, plank, squats, burpees — 3 to 5 rounds.
+        Your rep targets come from your baseline test (about half your max per
+        round).</p>
+      </div>
+      <div class="helpSec">
+        <div class="helpH">BASELINE TEST</div>
+        <p>One max-effort set of each exercise. Dial in your number with the
+        wheel, tap CONFIRM. Re-run it any time from the menu.</p>
+      </div>
+      <div class="helpSec">
+        <div class="helpH">DURING A WORKOUT</div>
+        <p>Do the reps shown, then tap DONE. Did more or fewer? Dial the real
+        number first — progress is based on what you actually did.</p>
+        <p>Plank: tap START HOLD and hold until the finish beeps. Tap STOP
+        EARLY if you break — it logs the seconds you held.</p>
+        <p>Between rounds a 90-second rest counts down. Tap to skip it.</p>
+        <p>Side button steps back one exercise if you mis-tapped.</p>
+      </div>
+      <div class="helpSec">
+        <div class="helpH">GETTING STRONGER</div>
+        <p>Finish 3+ workouts in a week and targets rise about 5%. Every third
+        raise adds a round (max 5). Two empty weeks steps you back one — easing
+        back in, never punishing.</p>
+      </div>
+      <div class="helpSec">
+        <div class="helpH">RUN + SAUNA</div>
+        <p>LOG RUN: dial minutes; tap the MILES box to add distance.</p>
+        <p>SAUNA: START/STOP runs a live timer, or use MANUAL ENTRY to dial
+        minutes after the fact.</p>
+      </div>
+      <div class="helpSec">
+        <div class="helpH">STREAK</div>
+        <p>Any logged activity — workout, run, or sauna — keeps your daily
+        streak alive.</p>
+      </div>
+      <div class="helpSec">
+        <div class="helpH">CONTROLS</div>
+        <p>wheel = adjust / scroll<br>tap = confirm<br>side click = back or
+        undo<br>hold side = menu</p>
+      </div>
+      <div class="helpSec">
+        <div class="helpH">SYNC</div>
+        <p>Green dot: history synced to your Google Sheet. Orange: entries
+        queued (offline) — they send on their own, or tap RESYNC in the
+        menu.</p>
+      </div>
+    </div>
+    <button id="helpOk" class="btn primary">GOT IT</button>
   </div>
 
   <script type="module">
