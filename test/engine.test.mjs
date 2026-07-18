@@ -5,6 +5,7 @@ import {
   addDays, daysBetween, defaultProfile, hasBaseline, setBaselines,
   computeLevel, planWorkout, makeEntry, todayStatus, streak, weekHistory,
   summarize, totals, hasBody, setBody, latestWeight, bmi,
+  bestStreak, calendar,
 } from '../src/engine.mjs';
 import { EXERCISES, BASE_ROUNDS, MAX_ROUNDS } from '../src/exercises.mjs';
 
@@ -171,6 +172,29 @@ eq(computeLevel([], BASE, day(28)), 0, 'level never goes below 0');
   eq(streak(wlog, '2026-07-12'), 1, 'run yesterday keeps streak; weight today adds nothing');
   eq(streak(wlog, '2026-07-13'), 0, 'weight on 07-12 does not chain the streak forward');
   eq(streak(wlog, '2026-07-11'), 1, 'run still counts');
+}
+
+// --- best streak / calendar ---
+{
+  eq(bestStreak([]), 0, 'empty log -> best 0');
+  const blog = [
+    w('2026-07-01'), w('2026-07-02'), w('2026-07-03'),          // 3-day run
+    makeEntry('run', '2026-07-08', { minutes: 20 }),
+    makeEntry('sauna', '2026-07-09', { minutes: 15, source: 'manual' }), // 2-day run
+    makeEntry('weight', '2026-07-10', { lbs: 180 }),            // weight breaks nothing
+    w('2026-07-02'),                                            // dup date, still 3
+  ];
+  eq(bestStreak(blog), 3, 'best streak is longest run');
+
+  const cal = calendar(blog, '2026-07-17'); // Fri
+  eq(cal.length, 35, '5-week grid');
+  eq(cal[34].date, '2026-07-18', 'grid ends Saturday of current week');
+  eq(cal[34].level, null, 'future day is null');
+  const cell = (d) => cal.find((c) => c.date === d);
+  eq(cell('2026-07-01').level, 2, 'workout day level 2');
+  eq(cell('2026-07-08').level, 1, 'run-only day level 1');
+  eq(cell('2026-07-10').level, 0, 'weigh-in only day level 0');
+  eq(cell('2026-07-17').level, 0, 'today empty but not null');
 }
 
 // --- entry ids unique-ish ---

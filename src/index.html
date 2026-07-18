@@ -116,6 +116,23 @@
     </div>
   </div>
 
+  <!-- STREAK CALENDAR -->
+  <div id="streaks" class="screen" style="display:none">
+    <div class="topbar">STREAK</div>
+    <div id="stStats" class="stStats">CURRENT 1 · BEST 5</div>
+    <div class="calWrap">
+      <div class="calHead">
+        <span>S</span><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span>
+      </div>
+      <div id="calGrid" class="calGrid"></div>
+    </div>
+    <div class="legend">
+      <span class="lg lv2"></span> workout &nbsp; <span class="lg lv1"></span> run/sauna
+    </div>
+    <button id="stLog" class="btn">VIEW FULL LOG</button>
+    <div class="footer">side = back</div>
+  </div>
+
   <!-- FULL LOG -->
   <div id="logview" class="screen" style="display:none">
     <div class="topbar">LOG</div>
@@ -184,10 +201,13 @@
         streak alive.</p>
       </div>
       <div class="helpSec">
-        <div class="helpH">YOUR LOG</div>
-        <p>Tap the big streak number on the home screen — or the LAST 7 DAYS
-        block in the menu — to open your full log: every workout, run, sauna,
-        and weigh-in with details, newest first. Scroll with the wheel.</p>
+        <div class="helpH">STREAK CALENDAR + LOG</div>
+        <p>Tap the big streak number on the home screen to open your streak
+        calendar: five weeks of training days (solid = workout, faded =
+        run/sauna only), plus your current and best streaks.</p>
+        <p>From there, VIEW FULL LOG lists every workout, run, sauna, and
+        weigh-in with details, newest first — also reachable by tapping the
+        LAST 7 DAYS block in the menu. Scroll with the wheel.</p>
       </div>
       <div class="helpSec">
         <div class="helpH">CONTROLS</div>

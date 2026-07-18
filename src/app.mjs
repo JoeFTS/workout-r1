@@ -5,7 +5,7 @@ import { EXERCISES, byId, REST_SECONDS } from './exercises.mjs';
 import {
   defaultProfile, hasBaseline, setBaselines, planWorkout, makeEntry,
   todayStatus, streak, weekHistory, totals,
-  hasBody, setBody, latestWeight, bmi,
+  hasBody, setBody, latestWeight, bmi, bestStreak, calendar,
 } from './engine.mjs';
 import {
   loadProfile, saveProfile, loadLog, saveLog, loadQueue,
@@ -15,7 +15,7 @@ import { setWebhook, enqueue, drain, entryPayload } from './sync.mjs';
 import { bindHardware } from './hardware.mjs';
 
 const $ = (id) => document.getElementById(id);
-const SCREENS = ['home', 'baseline', 'workout', 'rest', 'complete', 'sauna', 'run', 'menu', 'help', 'weight', 'logview'];
+const SCREENS = ['home', 'baseline', 'workout', 'rest', 'complete', 'sauna', 'run', 'menu', 'help', 'weight', 'logview', 'streaks'];
 const todayISO = () => {
   const d = new Date();
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
@@ -34,6 +34,7 @@ let sauna = { mode: 'idle', seconds: 0, minutes: 20, timer: null };
 let run = { minutes: 30, dist: 0, field: 'min' };
 let helpMode = 'menu'; // 'menu' (opened from menu) | 'firstrun' (intro before baseline)
 let wt = null;         // weigh-in: { step: 'height'|'weigh'|'target', heightIn, lbs, targetLbs }
+let logReturn = 'menu'; // where side-button exits the log viewer to
 
 const BL_DEFAULTS = { pushups: 20, plank: 60, squats: 30, burpees: 10 };
 
@@ -359,6 +360,19 @@ async function renderMenu() {
   show('menu');
 }
 
+// ---------- streak calendar ----------
+
+function openStreaks() {
+  const today = todayISO();
+  $('stStats').innerHTML =
+    `CURRENT <span class="accent">${streak(log, today)}</span> · BEST <span class="accent">${bestStreak(log)}</span>`;
+  $('calGrid').innerHTML = calendar(log, today).map((c) => {
+    const cls = c.level === null ? 'future' : c.level === 2 ? 'lv2' : c.level === 1 ? 'lv1' : '';
+    return `<div class="day ${cls}${c.date === today ? ' today' : ''}"></div>`;
+  }).join('');
+  show('streaks');
+}
+
 // ---------- full log ----------
 
 const DAYS = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
@@ -508,7 +522,10 @@ function sideClick() {
   else if (screen === 'help') {
     if (helpMode === 'firstrun') renderHome();
     else renderMenu();
-  } else if (screen === 'logview') renderMenu();
+  } else if (screen === 'logview') {
+    if (logReturn === 'streaks') openStreaks();
+    else renderMenu();
+  } else if (screen === 'streaks') renderHome();
   else if (screen === 'weight') {
     if (wt.step === 'target') { wt.step = 'weigh'; renderWeight(); }
     else if (wt.step === 'weigh' && !hasBody(profile)) { wt.step = 'height'; renderWeight(); }
@@ -557,8 +574,9 @@ export async function boot({ webhook }) {
   };
   $('mResync').onclick = async () => { await drain(); renderMenu(); renderSyncDot(); };
   $('mBaseline').onclick = startBaseline;
-  $('histList').onclick = openLog;
-  document.querySelector('.streakBlock').onclick = openLog;
+  $('histList').onclick = () => { logReturn = 'menu'; openLog(); };
+  document.querySelector('.streakBlock').onclick = openStreaks;
+  $('stLog').onclick = () => { logReturn = 'streaks'; openLog(); };
   $('mWeigh').onclick = openWeight;
   $('wtConfirm').onclick = confirmWeight;
   $('mHelp').onclick = () => openHelp('menu');

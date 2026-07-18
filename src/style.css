@@ -233,6 +233,49 @@ html, body {
 .histRow .m span { margin-left: 8px; color: var(--dim); opacity: 0.5; }
 .histRow .m span.on { color: var(--accent); opacity: 1; font-weight: 700; }
 
+/* ---------- streak calendar ---------- */
+
+.stStats {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  color: var(--ink);
+  text-align: center;
+}
+.stStats .accent { color: var(--accent); }
+.calWrap { flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 4px; min-height: 0; }
+.calHead, .calGrid { display: grid; grid-template-columns: repeat(7, 22px); gap: 4px; justify-content: center; }
+.calHead span {
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: var(--dim);
+  text-align: center;
+}
+.calGrid .day {
+  width: 22px;
+  height: 20px;
+  border: 1px solid var(--line);
+  background: var(--panel);
+  border-radius: 2px;
+}
+.calGrid .day.lv1 { background: var(--accent-soft); border-color: rgba(255, 79, 0, 0.45); }
+.calGrid .day.lv2 { background: var(--accent); border-color: var(--accent); box-shadow: 0 0 5px rgba(255, 79, 0, 0.4); }
+.calGrid .day.future { border-color: transparent; background: transparent; }
+.calGrid .day.today { outline: 1px solid var(--ink); outline-offset: 1px; }
+.legend {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 4px;
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  color: var(--dim);
+}
+.legend .lg { width: 8px; height: 8px; border-radius: 2px; display: inline-block; }
+.legend .lv2 { background: var(--accent); }
+.legend .lv1 { background: var(--accent-soft); border: 1px solid rgba(255, 79, 0, 0.45); }
+
 /* ---------- full log ---------- */
 
 .logList {

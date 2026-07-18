@@ -129,6 +129,36 @@ export function streak(log, today) {
   return n;
 }
 
+// Longest-ever run of consecutive training days.
+export function bestStreak(log) {
+  const days = [...new Set(log.filter((e) => TRAINING.has(e.type)).map((e) => e.date))].sort();
+  let best = 0, cur = 0, prev = null;
+  for (const d of days) {
+    cur = prev && daysBetween(prev, d) === 1 ? cur + 1 : 1;
+    best = Math.max(best, cur);
+    prev = d;
+  }
+  return best;
+}
+
+// 5-week activity grid ending on the current week (rows of Sun..Sat).
+// Each cell: { date, level } — level 2 = workout day, 1 = run/sauna only,
+// 0 = nothing, null = future day.
+export function calendar(log, today, weeks = 5) {
+  const byDay = new Map();
+  for (const e of log) {
+    if (!TRAINING.has(e.type)) continue;
+    const lvl = e.type === 'workout' ? 2 : 1;
+    byDay.set(e.date, Math.max(byDay.get(e.date) || 0, lvl));
+  }
+  const dow = new Date(today + 'T12:00:00').getDay();
+  const start = addDays(today, -dow - (weeks - 1) * 7);
+  return Array.from({ length: weeks * 7 }, (_, i) => {
+    const date = addDays(start, i);
+    return { date, level: date > today ? null : (byDay.get(date) || 0) };
+  });
+}
+
 // Last 7 days (oldest first) with W/R/S markers for the history screen.
 export function weekHistory(log, today) {
   const out = [];
