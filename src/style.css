@@ -92,7 +92,7 @@ html, body {
 
 /* ---------- round battery (signature) ---------- */
 
-.battery { display: flex; gap: 3px; height: 12px; }
+.battery { display: flex; gap: 3px; height: 12px; align-self: stretch; }
 .battery .seg {
   flex: 1;
   border: 1px solid var(--line);

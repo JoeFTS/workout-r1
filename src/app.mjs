@@ -100,6 +100,7 @@ async function renderHome() {
       : resumable ? 'RESUME WORKOUT'
         : st.workout ? 'WORKOUT DONE ✓' : 'START WORKOUT';
   $('btnWorkout').dataset.resume = resumable ? '1' : '';
+  $('btnWorkout').classList.toggle('primary', !st.workout); // quiet once done
   renderSyncDot();
   show('home');
 }
