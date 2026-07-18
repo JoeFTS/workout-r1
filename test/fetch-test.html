@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Grind webhook test</title>
+  <style>
+    body { font-family: monospace; background: #141414; color: #f2efe9; padding: 20px; }
+    input { width: 100%; padding: 6px; margin: 8px 0; font-family: monospace; }
+    button { padding: 8px 16px; font-family: monospace; font-weight: bold; }
+    pre { background: #1d1d1d; padding: 10px; white-space: pre-wrap; }
+  </style>
+</head>
+<body>
+  <h3>Grind — webhook reachability test</h3>
+  <p>Paste your deployed Apps Script /exec URL, then test from the same network
+     the R1 will use.</p>
+  <input id="url" placeholder="https://script.google.com/macros/s/.../exec" />
+  <button onclick="ping()">PING</button>
+  <button onclick="sample()">SEND SAMPLE ROW</button>
+  <pre id="out">-</pre>
+  <script>
+    async function post(payload) {
+      const out = document.getElementById('out');
+      out.textContent = 'sending...';
+      try {
+        const res = await fetch(document.getElementById('url').value, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify(payload),
+        });
+        out.textContent = `HTTP ${res.status}\n` + await res.text();
+      } catch (e) {
+        out.textContent = 'FAILED: ' + e;
+      }
+    }
+    const ping = () => post({ action: 'ping' });
+    const sample = () => post({
+      action: 'log',
+      id: 'test_' + Date.now(),
+      date: new Date().toISOString().slice(0, 10),
+      type: 'workout',
+      details: '3 rounds: push-ups [14,14,12]  plank [33s,33s,30s]  squats [22,22,22]  burpees [7,7,6]',
+      reps: 125, runMin: 0, saunaMin: 0,
+    });
+  </script>
+</body>
+</html>

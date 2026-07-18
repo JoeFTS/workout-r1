@@ -1,0 +1,236 @@
+/* style.css — 240x282 portrait instrument panel.
+   Charcoal ground, one orange accent (matched to the R1 body), giant Anton
+   numerals, IBM Plex Mono labels. Ember tones are reserved for the sauna. */
+
+:root {
+  --bg: #141414;
+  --panel: #1d1d1d;
+  --line: #2c2c2c;
+  --ink: #f2efe9;
+  --dim: #5a5a5a;
+  --accent: #ff4f00;
+  --accent-soft: rgba(255, 79, 0, 0.14);
+  --ember-bg: #190b06;
+  --ember: #ff8b3d;
+  --ember-hot: #ffb04c;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html, body {
+  width: 240px;
+  height: 282px;
+  overflow: hidden;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: 'IBM Plex Mono', monospace;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.screen {
+  width: 240px;
+  height: 282px;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.screen.center { justify-content: center; align-items: center; gap: 10px; }
+
+/* ---------- type ---------- */
+
+.hero {
+  font-family: 'Anton', sans-serif;
+  font-size: 92px;
+  line-height: 0.95;
+  letter-spacing: 0.01em;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+.hero.xl { font-size: 110px; }
+.hero.accent { color: var(--accent); }
+
+.label {
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  text-align: center;
+}
+.dim { color: var(--dim); }
+.accent { color: var(--accent); }
+
+.topbar {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  color: var(--dim);
+  text-align: center;
+  padding-bottom: 2px;
+  border-bottom: 1px solid var(--line);
+}
+
+.exName {
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  color: var(--accent);
+  text-align: center;
+  margin-top: 4px;
+}
+
+.heroWrap {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 4px;
+  min-height: 0;
+}
+
+/* ---------- round battery (signature) ---------- */
+
+.battery { display: flex; gap: 3px; height: 12px; }
+.battery .seg {
+  flex: 1;
+  border: 1px solid var(--line);
+  background: var(--panel);
+  transition: background 0.15s, box-shadow 0.15s;
+}
+.battery .seg.full {
+  background: var(--accent);
+  border-color: var(--accent);
+  box-shadow: 0 0 6px rgba(255, 79, 0, 0.55);
+}
+.battery .seg.live {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+/* ---------- home ---------- */
+
+.statusRow {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+}
+.statusRow .on { color: var(--ink); }
+.statusRow .off { color: var(--dim); opacity: 0.6; }
+.statusRow .on::before { content: '■ '; color: var(--accent); }
+.statusRow .off::before { content: '□ '; }
+
+.streakBlock {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 4px;
+  min-height: 0;
+}
+.streakBlock .hero { font-size: 84px; }
+
+/* ---------- buttons ---------- */
+
+.stack { display: flex; flex-direction: column; gap: 6px; }
+.row { display: flex; gap: 6px; }
+.row .btn { flex: 1; }
+
+.btn {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  padding: 11px 4px;
+  background: var(--panel);
+  color: var(--ink);
+  border: 1px solid var(--line);
+  cursor: pointer;
+}
+.btn:active { background: var(--line); }
+.btn.primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #140800;
+}
+.btn.primary:active { filter: brightness(1.15); }
+
+/* ---------- footer ---------- */
+
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  color: var(--dim);
+  padding-top: 2px;
+}
+.dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--dim);
+}
+.dot.ok { background: #3f9d55; }
+.dot.pending { background: var(--accent); }
+
+/* ---------- rest ---------- */
+
+#rest { cursor: pointer; }
+#rest .hero.pulse { animation: pulse 0.5s ease-in-out infinite alternate; }
+@keyframes pulse { from { color: var(--ink); } to { color: var(--accent); } }
+
+/* ---------- sauna (ember — the only screen allowed heat colors) ---------- */
+
+.screen.ember {
+  background: radial-gradient(120% 90% at 50% 110%, #33130a 0%, var(--ember-bg) 60%, #120806 100%);
+}
+.screen.ember .hero { color: var(--ember-hot); text-shadow: 0 0 18px rgba(255, 139, 61, 0.35); }
+.screen.ember .topbar { color: var(--ember); border-color: #3a1c0e; }
+.screen.ember .btn { background: #241009; border-color: #3a1c0e; color: var(--ember-hot); }
+.screen.ember .btn.primary { background: var(--ember); border-color: var(--ember); color: #1c0c04; }
+.screen.ember .footer { color: #7a4a2e; }
+.screen.ember .label.dim { color: #7a4a2e; }
+
+/* ---------- run fields ---------- */
+
+.fields { flex: 1; display: flex; align-items: center; justify-content: center; gap: 14px; }
+.field {
+  flex: 1;
+  padding: 10px 4px 8px;
+  border: 1px solid var(--line);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  cursor: pointer;
+}
+.field.active { border-color: var(--accent); background: var(--accent-soft); }
+.fieldNum {
+  font-family: 'Anton', sans-serif;
+  font-size: 44px;
+  line-height: 1;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- history ---------- */
+
+.hist { flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 3px; }
+.histRow {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  padding: 1px 2px;
+}
+.histRow .d { color: var(--dim); }
+.histRow .m span { margin-left: 8px; color: var(--dim); opacity: 0.5; }
+.histRow .m span.on { color: var(--accent); opacity: 1; font-weight: 700; }
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; }
+}

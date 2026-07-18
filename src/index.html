@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=240, height=282, initial-scale=1, user-scalable=no" />
+  <title>Grind</title>
+  <link rel="stylesheet" href="fonts.css" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- HOME -->
+  <div id="home" class="screen">
+    <div id="homeBattery" class="battery"></div>
+    <div id="homeStatus" class="statusRow"></div>
+    <div class="streakBlock">
+      <div id="streakNum" class="hero">0</div>
+      <div class="label dim">DAY STREAK</div>
+    </div>
+    <div class="stack">
+      <button id="btnWorkout" class="btn primary">START WORKOUT</button>
+      <div class="row">
+        <button id="btnRun" class="btn">LOG RUN</button>
+        <button id="btnSauna" class="btn">SAUNA</button>
+      </div>
+    </div>
+    <div class="footer"><span id="syncDot" class="dot"></span><span id="footNote">hold side = menu</span></div>
+  </div>
+
+  <!-- BASELINE TEST -->
+  <div id="baseline" class="screen" style="display:none">
+    <div class="topbar">BASELINE TEST</div>
+    <div class="exName" id="blName">PUSH-UPS</div>
+    <div class="label dim">ONE MAX-EFFORT SET</div>
+    <div class="heroWrap">
+      <div id="blNum" class="hero">20</div>
+      <div id="blUnit" class="label dim">REPS</div>
+    </div>
+    <button id="blConfirm" class="btn primary">CONFIRM</button>
+    <div class="footer">wheel = adjust &nbsp; side = back</div>
+  </div>
+
+  <!-- WORKOUT -->
+  <div id="workout" class="screen" style="display:none">
+    <div id="wkBattery" class="battery"></div>
+    <div id="wkRound" class="topbar">ROUND 1/3</div>
+    <div class="exName" id="wkName">PUSH-UPS</div>
+    <div class="heroWrap">
+      <div id="wkNum" class="hero">14</div>
+      <div id="wkUnit" class="label dim">REPS</div>
+    </div>
+    <button id="wkAction" class="btn primary">DONE</button>
+    <div class="footer">wheel = actual &nbsp; side = back</div>
+  </div>
+
+  <!-- REST -->
+  <div id="rest" class="screen center" style="display:none">
+    <div class="label accent">REST</div>
+    <div id="restNum" class="hero xl">90</div>
+    <div class="label dim">TAP TO SKIP</div>
+  </div>
+
+  <!-- WORKOUT COMPLETE -->
+  <div id="complete" class="screen center" style="display:none">
+    <div id="doneBattery" class="battery"></div>
+    <div class="hero accent" style="font-size:64px">DONE</div>
+    <div id="doneSummary" class="label"></div>
+    <button id="doneOk" class="btn primary">FINISH</button>
+  </div>
+
+  <!-- SAUNA -->
+  <div id="sauna" class="screen ember" style="display:none">
+    <div class="topbar">SAUNA</div>
+    <div class="heroWrap">
+      <div id="saNum" class="hero">0:00</div>
+      <div id="saUnit" class="label dim">MIN : SEC</div>
+    </div>
+    <div class="stack">
+      <button id="saMain" class="btn primary ember">START</button>
+      <button id="saManual" class="btn">MANUAL ENTRY</button>
+    </div>
+    <div class="footer">side = back</div>
+  </div>
+
+  <!-- RUN LOG -->
+  <div id="run" class="screen" style="display:none">
+    <div class="topbar">LOG RUN</div>
+    <div class="fields">
+      <div id="fMin" class="field active">
+        <div id="runMin" class="fieldNum">30</div>
+        <div class="label dim">MIN</div>
+      </div>
+      <div id="fDist" class="field">
+        <div id="runDist" class="fieldNum">0.0</div>
+        <div class="label dim">MILES</div>
+      </div>
+    </div>
+    <button id="runSave" class="btn primary">SAVE RUN</button>
+    <div class="footer">wheel = adjust &nbsp; tap = field &nbsp; side = back</div>
+  </div>
+
+  <!-- MENU / HISTORY -->
+  <div id="menu" class="screen" style="display:none">
+    <div class="topbar">LAST 7 DAYS</div>
+    <div id="histList" class="hist"></div>
+    <div class="stack">
+      <button id="mResync" class="btn">RESYNC <span id="mQueue" class="dim"></span></button>
+      <button id="mBaseline" class="btn">RE-RUN BASELINE</button>
+      <button id="mBack" class="btn">BACK</button>
+    </div>
+  </div>
+
+  <script type="module">
+    import { boot } from './app.mjs';
+    // ⬇️ Paste your deployed Apps Script web-app URL here after you create it.
+    const WEBHOOK = '';
+    boot({ webhook: WEBHOOK });
+  </script>
+</body>
+</html>
