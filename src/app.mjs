@@ -8,7 +8,7 @@ import {
   hasBody, setBody, latestWeight, bmi, bestStreak, calendar, addDays,
 } from './engine.mjs';
 import {
-  loadProfile, saveProfile, loadLog, saveLog, loadQueue,
+  loadProfile, saveProfile, loadLog, saveLog, loadQueue, saveQueue,
   getJSON, setJSON, storageMode,
 } from './storage.mjs';
 import { setWebhook, enqueue, drain, entryPayload } from './sync.mjs';
@@ -358,7 +358,36 @@ async function renderMenu() {
   const q = await loadQueue();
   $('mQueue').textContent = q.length ? `(${q.length})` : '';
   $('mDemo').textContent = hasDemo() ? 'CLEAR DEMO' : 'DEMO DATA';
+  disarmReset();
   show('menu');
+}
+
+// ---------- reset (two-tap confirm) ----------
+
+let resetArmed = false;
+
+async function resetAll() {
+  if (!resetArmed) {
+    resetArmed = true;
+    $('mReset').textContent = 'SURE?';
+    $('mReset').classList.add('primary');
+    return;
+  }
+  profile = defaultProfile();
+  log = [];
+  wk = null;
+  await saveProfile(profile);
+  await saveLog(log);
+  await saveQueue([]);
+  await setJSON('session', null);
+  disarmReset();
+  renderHome(); // back to day one: home shows BASELINE TEST
+}
+
+function disarmReset() {
+  resetArmed = false;
+  $('mReset').textContent = 'RESET';
+  $('mReset').classList.remove('primary');
 }
 
 // ---------- demo data (local only — never synced) ----------
@@ -622,6 +651,7 @@ export async function boot({ webhook }) {
   $('wtConfirm').onclick = confirmWeight;
   $('mHelp').onclick = () => openHelp('menu');
   $('mDemo').onclick = toggleDemo;
+  $('mReset').onclick = resetAll;
   $('helpOk').onclick = closeHelp;
   $('mBack').onclick = renderHome;
 
