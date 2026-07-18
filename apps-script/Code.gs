@@ -16,7 +16,7 @@
  * parse e.postData.contents as JSON ourselves.
  */
 
-var HEADERS = ['id', 'date', 'type', 'details', 'totalReps', 'runMin', 'saunaMin', 'loggedAt'];
+var HEADERS = ['id', 'date', 'type', 'details', 'totalReps', 'runMin', 'saunaMin', 'weightLbs', 'loggedAt'];
 
 function doPost(e) {
   try {
@@ -35,7 +35,7 @@ function doPost(e) {
 function upsertLog(b) {
   var sheet = getSheet('Log');
   var row = [b.id, b.date, b.type, b.details, b.reps || 0, b.runMin || 0,
-    b.saunaMin || 0, new Date()];
+    b.saunaMin || 0, b.weightLbs || '', new Date()];
 
   // Upsert by entry id (column A) so queue retries never duplicate rows.
   var last = sheet.getLastRow();

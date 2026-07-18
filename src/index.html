@@ -104,11 +104,28 @@
     <div class="topbar">LAST 7 DAYS</div>
     <div id="histList" class="hist"></div>
     <div class="stack">
-      <button id="mResync" class="btn">RESYNC <span id="mQueue" class="dim"></span></button>
-      <button id="mBaseline" class="btn">RE-RUN BASELINE</button>
-      <button id="mHelp" class="btn">HOW TO USE</button>
+      <div class="row">
+        <button id="mWeigh" class="btn">WEIGH IN</button>
+        <button id="mResync" class="btn">RESYNC <span id="mQueue" class="dim"></span></button>
+      </div>
+      <div class="row">
+        <button id="mBaseline" class="btn">BASELINE</button>
+        <button id="mHelp" class="btn">HOW TO</button>
+      </div>
       <button id="mBack" class="btn">BACK</button>
     </div>
+  </div>
+
+  <!-- WEIGH IN / BODY SETUP -->
+  <div id="weight" class="screen" style="display:none">
+    <div id="wtTop" class="topbar">WEIGH IN</div>
+    <div class="exName" id="wtLabel">WEIGHT</div>
+    <div class="heroWrap">
+      <div id="wtNum" class="hero">180</div>
+      <div id="wtUnit" class="label dim">LBS</div>
+    </div>
+    <button id="wtConfirm" class="btn primary">SAVE</button>
+    <div class="footer">wheel = adjust &nbsp; side = back</div>
   </div>
 
   <!-- HELP / HOW TO -->
@@ -146,6 +163,13 @@
         <p>LOG RUN: dial minutes; tap the MILES box to add distance.</p>
         <p>SAUNA: START/STOP runs a live timer, or use MANUAL ENTRY to dial
         minutes after the fact.</p>
+      </div>
+      <div class="helpSec">
+        <div class="helpH">WEIGH IN</div>
+        <p>Menu → WEIGH IN. First time it asks your height, current weight,
+        and target weight; after that it's one dial and SAVE. The screen shows
+        how far you are from your target and your BMI. Weigh-ins go to your
+        history but don't count toward the streak — only training does.</p>
       </div>
       <div class="helpSec">
         <div class="helpH">STREAK</div>

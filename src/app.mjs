@@ -5,6 +5,7 @@ import { EXERCISES, byId, REST_SECONDS } from './exercises.mjs';
 import {
   defaultProfile, hasBaseline, setBaselines, planWorkout, makeEntry,
   todayStatus, streak, weekHistory, totals,
+  hasBody, setBody, latestWeight, bmi,
 } from './engine.mjs';
 import {
   loadProfile, saveProfile, loadLog, saveLog, loadQueue,
@@ -14,7 +15,7 @@ import { setWebhook, enqueue, drain, entryPayload } from './sync.mjs';
 import { bindHardware } from './hardware.mjs';
 
 const $ = (id) => document.getElementById(id);
-const SCREENS = ['home', 'baseline', 'workout', 'rest', 'complete', 'sauna', 'run', 'menu', 'help'];
+const SCREENS = ['home', 'baseline', 'workout', 'rest', 'complete', 'sauna', 'run', 'menu', 'help', 'weight'];
 const todayISO = () => {
   const d = new Date();
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
@@ -32,6 +33,7 @@ let rest = null;    // { remaining, timer }
 let sauna = { mode: 'idle', seconds: 0, minutes: 20, timer: null };
 let run = { minutes: 30, dist: 0, field: 'min' };
 let helpMode = 'menu'; // 'menu' (opened from menu) | 'firstrun' (intro before baseline)
+let wt = null;         // weigh-in: { step: 'height'|'weigh'|'target', heightIn, lbs, targetLbs }
 
 const BL_DEFAULTS = { pushups: 20, plank: 60, squats: 30, burpees: 10 };
 
@@ -358,6 +360,65 @@ async function renderMenu() {
   show('menu');
 }
 
+// ---------- weigh in ----------
+
+const fmtHeight = (inches) => `${Math.floor(inches / 12)}'${inches % 12}"`;
+
+function openWeight() {
+  const last = latestWeight(log);
+  wt = hasBody(profile)
+    ? { step: 'weigh', ...profile.body, lbs: last || 180 }
+    : { step: 'height', heightIn: 70, lbs: last || 180, targetLbs: 0 };
+  renderWeight();
+  show('weight');
+}
+
+function renderWeight() {
+  const setup = !hasBody(profile);
+  $('wtTop').textContent = setup ? 'BODY SETUP' : 'WEIGH IN';
+  if (wt.step === 'height') {
+    $('wtLabel').textContent = 'HEIGHT';
+    $('wtNum').textContent = fmtHeight(wt.heightIn);
+    $('wtUnit').textContent = 'FT / IN';
+    $('wtConfirm').textContent = 'CONFIRM';
+  } else if (wt.step === 'weigh') {
+    $('wtLabel').textContent = 'WEIGHT';
+    $('wtNum').textContent = wt.lbs;
+    const parts = [`BMI ${bmi(wt.heightIn, wt.lbs)}`];
+    if (wt.targetLbs > 0) {
+      const togo = wt.lbs - wt.targetLbs;
+      parts.unshift(`TARGET ${wt.targetLbs}`);
+      parts.push(togo > 0 ? `${togo} TO GO` : 'AT TARGET ✓');
+    }
+    $('wtUnit').textContent = parts.join(' · ');
+    $('wtConfirm').textContent = setup ? 'CONFIRM' : 'SAVE';
+  } else { // target
+    $('wtLabel').textContent = 'TARGET WEIGHT';
+    $('wtNum').textContent = wt.targetLbs;
+    $('wtUnit').textContent = `CURRENT ${wt.lbs} LB`;
+    $('wtConfirm').textContent = 'FINISH SETUP';
+  }
+}
+
+async function confirmWeight() {
+  if (wt.step === 'height') {
+    wt.step = 'weigh';
+    renderWeight();
+  } else if (wt.step === 'weigh' && !hasBody(profile)) {
+    wt.targetLbs = wt.targetLbs || Math.max(1, wt.lbs - 10);
+    wt.step = 'target';
+    renderWeight();
+  } else {
+    if (!hasBody(profile)) {
+      profile = setBody(profile, { heightIn: wt.heightIn, targetLbs: wt.targetLbs });
+      await saveProfile(profile);
+    }
+    await commitEntry('weight', { lbs: wt.lbs });
+    wt = null;
+    renderHome();
+  }
+}
+
 // ---------- help ----------
 
 function openHelp(mode) {
@@ -392,6 +453,11 @@ function dial(delta) {
     renderRun();
   } else if (screen === 'help') {
     $('helpBody').scrollTop -= delta * 40; // wheel up scrolls up
+  } else if (screen === 'weight') {
+    if (wt.step === 'height') wt.heightIn = Math.min(96, Math.max(48, wt.heightIn + delta));
+    else if (wt.step === 'weigh') wt.lbs = Math.max(50, wt.lbs + delta);
+    else wt.targetLbs = Math.max(50, wt.targetLbs + delta);
+    renderWeight();
   }
 }
 
@@ -406,6 +472,10 @@ function sideClick() {
   else if (screen === 'help') {
     if (helpMode === 'firstrun') renderHome();
     else renderMenu();
+  } else if (screen === 'weight') {
+    if (wt.step === 'target') { wt.step = 'weigh'; renderWeight(); }
+    else if (wt.step === 'weigh' && !hasBody(profile)) { wt.step = 'height'; renderWeight(); }
+    else { wt = null; renderMenu(); }
   }
 }
 
@@ -450,6 +520,8 @@ export async function boot({ webhook }) {
   };
   $('mResync').onclick = async () => { await drain(); renderMenu(); renderSyncDot(); };
   $('mBaseline').onclick = startBaseline;
+  $('mWeigh').onclick = openWeight;
+  $('wtConfirm').onclick = confirmWeight;
   $('mHelp').onclick = () => openHelp('menu');
   $('helpOk').onclick = closeHelp;
   $('mBack').onclick = renderHome;

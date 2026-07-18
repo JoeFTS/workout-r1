@@ -33,6 +33,12 @@ export function defaultProfile() {
 export const hasBaseline = (p) =>
   !!(p && p.baselines && EXERCISES.every((e) => p.baselines[e.id] > 0));
 
+// body: { heightIn, targetLbs } — set once via the weigh-in setup flow
+export const hasBody = (p) => !!(p && p.body && p.body.heightIn > 0 && p.body.targetLbs > 0);
+export function setBody(profile, body) {
+  return { ...profile, body: { ...body } };
+}
+
 export function setBaselines(profile, baselines, date) {
   return { ...profile, baselines: { ...baselines }, baselineDate: date };
 }
@@ -107,11 +113,13 @@ export function todayStatus(log, today) {
   };
 }
 
-// Streak: consecutive days with ANY logged activity, counting back from today.
-// Today only counts once something is logged; an empty today doesn't break a
-// streak that ran through yesterday.
+// Streak: consecutive days with TRAINING activity (workout/run/sauna — a
+// weigh-in doesn't count), counting back from today. Today only counts once
+// something is logged; an empty today doesn't break a streak that ran through
+// yesterday.
+const TRAINING = new Set(['workout', 'run', 'sauna']);
 export function streak(log, today) {
-  const days = new Set(log.map((e) => e.date));
+  const days = new Set(log.filter((e) => TRAINING.has(e.type)).map((e) => e.date));
   let d = days.has(today) ? today : addDays(today, -1);
   let n = 0;
   while (days.has(d)) {
@@ -129,6 +137,19 @@ export function weekHistory(log, today) {
     out.push({ date, ...todayStatus(log, date) });
   }
   return out;
+}
+
+// ---------- body / weight ----------
+
+// Most recent logged weight in lbs, or null.
+export function latestWeight(log) {
+  for (let i = log.length - 1; i >= 0; i--)
+    if (log[i].type === 'weight') return log[i].payload.lbs;
+  return null;
+}
+
+export function bmi(heightIn, lbs) {
+  return Math.round((703 * lbs) / (heightIn * heightIn) * 10) / 10;
 }
 
 // ---------- sheet row summarization ----------
@@ -149,19 +170,22 @@ export function summarize(entry) {
       : `${p.minutes} min`;
   }
   if (entry.type === 'sauna') return `${p.minutes} min (${p.source})`;
+  if (entry.type === 'weight') return `${p.lbs} lb`;
   return '';
 }
 
 export function totals(entry) {
   const p = entry.payload;
+  const zero = { reps: 0, runMin: 0, saunaMin: 0, weightLbs: 0 };
   if (entry.type === 'workout') {
     let reps = 0;
     for (const r of p.rounds)
       for (const ex of EXERCISES)
         if (ex.unit === 'reps') reps += r[ex.id] ?? 0;
-    return { reps, runMin: 0, saunaMin: 0 };
+    return { ...zero, reps };
   }
-  if (entry.type === 'run') return { reps: 0, runMin: p.minutes, saunaMin: 0 };
-  if (entry.type === 'sauna') return { reps: 0, runMin: 0, saunaMin: p.minutes };
-  return { reps: 0, runMin: 0, saunaMin: 0 };
+  if (entry.type === 'run') return { ...zero, runMin: p.minutes };
+  if (entry.type === 'sauna') return { ...zero, saunaMin: p.minutes };
+  if (entry.type === 'weight') return { ...zero, weightLbs: p.lbs };
+  return zero;
 }

@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import {
   addDays, daysBetween, defaultProfile, hasBaseline, setBaselines,
   computeLevel, planWorkout, makeEntry, todayStatus, streak, weekHistory,
-  summarize, totals,
+  summarize, totals, hasBody, setBody, latestWeight, bmi,
 } from '../src/engine.mjs';
 import { EXERCISES, BASE_ROUNDS, MAX_ROUNDS } from '../src/exercises.mjs';
 
@@ -133,7 +133,7 @@ eq(computeLevel([], BASE, day(28)), 0, 'level never goes below 0');
   });
   ok(summarize(e).startsWith('2 rounds:'), 'workout summary counts rounds');
   ok(summarize(e).includes('plank [33s,30s]'), 'plank shown in seconds');
-  eq(totals(e), { reps: 83, runMin: 0, saunaMin: 0 },
+  eq(totals(e), { reps: 83, runMin: 0, saunaMin: 0, weightLbs: 0 },
     'workout totals sum rep exercises only');
 
   const r = makeEntry('run', BASE, { minutes: 32, distance: 31 });
@@ -143,6 +143,34 @@ eq(computeLevel([], BASE, day(28)), 0, 'level never goes below 0');
   const s = makeEntry('sauna', BASE, { minutes: 18, source: 'manual' });
   eq(summarize(s), '18 min (manual)', 'sauna summary');
   eq(totals(s).saunaMin, 18, 'sauna totals');
+}
+
+// --- body / weight ---
+{
+  ok(!hasBody(profile), 'no body profile initially');
+  const p2 = setBody(profile, { heightIn: 70, targetLbs: 175 });
+  ok(hasBody(p2), 'body profile set');
+  ok(hasBaseline(p2), 'setBody preserves baselines');
+
+  eq(latestWeight([]), null, 'no weight logged -> null');
+  const wlog = [
+    makeEntry('weight', '2026-07-10', { lbs: 184 }),
+    makeEntry('run', '2026-07-11', { minutes: 30 }),
+    makeEntry('weight', '2026-07-12', { lbs: 182 }),
+  ];
+  eq(latestWeight(wlog), 182, 'latest weight wins');
+
+  eq(bmi(70, 182), 26.1, 'BMI calc');
+
+  const we = makeEntry('weight', BASE, { lbs: 182 });
+  eq(summarize(we), '182 lb', 'weight summary');
+  eq(totals(we).weightLbs, 182, 'weight totals');
+  eq(totals(w(BASE)).weightLbs, 0, 'workout has no weightLbs');
+
+  // weigh-ins do NOT extend the training streak
+  eq(streak(wlog, '2026-07-12'), 1, 'run yesterday keeps streak; weight today adds nothing');
+  eq(streak(wlog, '2026-07-13'), 0, 'weight on 07-12 does not chain the streak forward');
+  eq(streak(wlog, '2026-07-11'), 1, 'run still counts');
 }
 
 // --- entry ids unique-ish ---
