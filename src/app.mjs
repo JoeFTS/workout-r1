@@ -5,7 +5,7 @@ import { EXERCISES, byId, REST_SECONDS } from './exercises.mjs';
 import {
   defaultProfile, hasBaseline, setBaselines, planWorkout, makeEntry,
   todayStatus, streak, weekHistory, totals,
-  hasBody, setBody, latestWeight, bmi, bestStreak, calendar,
+  hasBody, setBody, latestWeight, bmi, bestStreak, calendar, addDays,
 } from './engine.mjs';
 import {
   loadProfile, saveProfile, loadLog, saveLog, loadQueue,
@@ -357,7 +357,48 @@ async function renderMenu() {
   }).join('');
   const q = await loadQueue();
   $('mQueue').textContent = q.length ? `(${q.length})` : '';
+  $('mDemo').textContent = hasDemo() ? 'CLEAR DEMO' : 'DEMO DATA';
   show('menu');
+}
+
+// ---------- demo data (local only — never synced) ----------
+
+const hasDemo = () => log.some((e) => e.id.startsWith('demo_'));
+
+// A plausible month of training so the calendar/log screens can be previewed.
+// Entries go straight into the local log (no sync queue), ids prefixed demo_
+// so they can be removed cleanly.
+async function toggleDemo() {
+  if (hasDemo()) {
+    log = log.filter((e) => !e.id.startsWith('demo_'));
+  } else {
+    const today = todayISO();
+    const day = (n) => addDays(today, -n);
+    const wo = (n, scale) => {
+      const r = (base) => Math.round(base * scale);
+      const round = () => ({ pushups: r(14), plank: r(33), squats: r(22), burpees: r(7) });
+      return { id: `demo_w${n}`, date: day(n), type: 'workout',
+        payload: { rounds: [round(), round(), round()] } };
+    };
+    const rn = (n, min, dist) => ({ id: `demo_r${n}`, date: day(n), type: 'run',
+      payload: { minutes: min, distance: dist } });
+    const sa = (n, min) => ({ id: `demo_s${n}`, date: day(n), type: 'sauna',
+      payload: { minutes: min, source: 'timer' } });
+    const wt2 = (n, lbs) => ({ id: `demo_wt${n}`, date: day(n), type: 'weight',
+      payload: { lbs } });
+    const demo = [
+      // ~4 weeks: 3-4 workouts/wk, 2 runs/wk, sauna sprinkled, weight trending down
+      wo(27, 0.85), rn(26, 24, 22), wo(25, 0.85), sa(25, 15), wt2(27, 188),
+      wo(23, 0.9), rn(22, 26, 25), wo(21, 0.9), sa(20, 18), wt2(21, 187),
+      wo(19, 0.9), wo(17, 0.95), rn(16, 28, 27), sa(16, 20), wt2(14, 185),
+      wo(12, 0.95), rn(11, 30, 30), wo(10, 1), sa(9, 20), wt2(8, 184),
+      wo(6, 1), rn(5, 30, 31), wo(4, 1), sa(3, 22), wt2(3, 183),
+      wo(2, 1.05), rn(1, 32, 32),
+    ];
+    log = [...log, ...demo].sort((a, b) => a.date < b.date ? -1 : 1);
+  }
+  await saveLog(log);
+  renderMenu();
 }
 
 // ---------- streak calendar ----------
@@ -580,6 +621,7 @@ export async function boot({ webhook }) {
   $('mWeigh').onclick = openWeight;
   $('wtConfirm').onclick = confirmWeight;
   $('mHelp').onclick = () => openHelp('menu');
+  $('mDemo').onclick = toggleDemo;
   $('helpOk').onclick = closeHelp;
   $('mBack').onclick = renderHome;
 
