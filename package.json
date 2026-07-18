@@ -1,0 +1,11 @@
+{
+  "name": "workout-r1",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Grind — Rabbit R1 daily bodyweight workout, run, and sauna tracker",
+  "scripts": {
+    "test": "node test/engine.test.mjs",
+    "dev": "npx serve src"
+  }
+}
